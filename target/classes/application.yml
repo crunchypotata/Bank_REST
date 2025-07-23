@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/bankrest?useSSL=false
     username: root
-    password: password
+    password: xufjor-todsiB
   jpa:
     hibernate:
       ddl-auto: update
