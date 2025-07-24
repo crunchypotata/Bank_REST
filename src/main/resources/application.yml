@@ -5,11 +5,23 @@ spring:
     url: jdbc:mysql://localhost:3306/bankrest?useSSL=false
     username: root
     password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    database: MYSQL
   liquibase:
     change-log: classpath:db/migration/changelog-master.yaml
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://idp.example.com/issuer
 server:
   port: 8080
