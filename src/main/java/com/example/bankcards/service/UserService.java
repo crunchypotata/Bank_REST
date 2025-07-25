@@ -1,38 +1,54 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.bankcards.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
+    private final UserRepository repository;
 
-    private final Map<String, User> users = new HashMap<>();
-    private final PasswordEncoder passwordEncoder;
 
-    public UserService(PasswordEncoder passwordEncoder) {
-
-        this.passwordEncoder = passwordEncoder;
-
-        //TODO 1:  Add a default admin user with username admin, password admin123 and role ADMIN
-        User admin = new User("admin", passwordEncoder.encode("admin123"), "ADMIN");
-        users.put(admin.getUsername(), admin);
-
-        //TODO 2: Add a default regular user with username user, password user123 and role USER;
-        User user = new User("user", passwordEncoder.encode("user123"), "USER");
-        users.put(user.getUsername(), user);
+    public User save(User user) {
+        return repository.save(user);
     }
 
-    public void registerUser(User user) {
-        // Encode the password before saving
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        users.put(user.getUsername(), user);  // Store the user in the map
+    public User create(User user) {
+        if (repository.existsByUsername(user.getUsername())) {
+
+            throw new RuntimeException("User with this username already exists");
+        }
+
+        return save(user);
     }
 
-    public User findByUsername(String username) {
-        return users.get(username);
+    public User getByUsername(String username) {
+        return repository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
+    }
+
+    public UserDetailsService userDetailsService() {
+        return this::getByUsername;
+    }
+
+    public User getCurrentUser() {
+        // Get username from Spring Security
+        var username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return getByUsername(username);
+    }
+
+    @Deprecated
+    public void getAdmin() {
+        var user = getCurrentUser();
+        user.setRole(Role.ROLE_ADMIN);
+        save(user);
     }
 }

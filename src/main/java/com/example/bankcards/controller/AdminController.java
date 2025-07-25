@@ -10,16 +10,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping
 public class AdminController {
 
-    @GetMapping("/admin/dashboard")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String adminDashboard() {
-        return "admin-dashboard";
-    }
-
-    @GetMapping("/user/profile")
-    @PreAuthorize("hasRole('USER')")
-    public String userProfile() {
-        return "user-profile";
-    }
 
 }

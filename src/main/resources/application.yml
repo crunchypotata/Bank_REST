@@ -25,3 +25,5 @@ spring:
           issuer-uri: https://idp.example.com/issuer
 server:
   port: 8080
+
+token.signing.key: 0123456789abc!eF0123456789abcdef
