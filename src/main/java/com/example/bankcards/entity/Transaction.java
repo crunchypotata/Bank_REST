@@ -1,9 +1,14 @@
 package com.example.bankcards.entity;
-import lombok.Data;
+import lombok.*;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "transactions")
 public class Transaction {

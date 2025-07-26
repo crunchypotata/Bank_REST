@@ -1,11 +1,16 @@
 package com.example.bankcards.entity;
 
-import lombok.Data;
+import lombok.*;
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "cards")
 public class Card {
     @Id
@@ -18,7 +23,7 @@ public class Card {
     private Double balance;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // внешний ключ на пользователя
+    @JoinColumn(name = "user_id") // user_id is the foreign key column in the cards table
     private User owner;
 }
 

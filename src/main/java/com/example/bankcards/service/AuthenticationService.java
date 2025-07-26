@@ -3,7 +3,7 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.JwtAuthenticationResponse;
 import com.example.bankcards.dto.SignInRequest;
 import com.example.bankcards.dto.SignUpRequest;
-import com.example.bankcards.entity.Role;
+import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,8 +30,9 @@ public class AuthenticationService {
 
         var user = User.builder()
                 .username(request.getUsername())
+                .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.ROLE_USER)
+                .userRole(UserRole.ROLE_USER)
                 .build();
 
         userService.create(user);

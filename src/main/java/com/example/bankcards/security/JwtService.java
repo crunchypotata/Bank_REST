@@ -28,7 +28,7 @@ public class JwtService {
         if (userDetails instanceof User customUserDetails) {
             claims.put("id", customUserDetails.getId());
             claims.put("username", customUserDetails.getUsername());
-            claims.put("role", customUserDetails.getRole());
+            claims.put("userRole", customUserDetails.getUserRole());
         }
         return generateToken(claims, userDetails);
     }
@@ -37,7 +37,7 @@ public class JwtService {
         final String userName = extractUserName(token);
         return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
-
+    // t - type of data to be extracted
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {
         final Claims claims = extractAllClaims(token);
         return claimsResolvers.apply(claims);

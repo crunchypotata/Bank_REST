@@ -26,4 +26,4 @@ spring:
 server:
   port: 8080
 
-token.signing.key: 0123456789abc!eF0123456789abcdef
+token.signing.key: c3VwZXJsb25nc2VjcmV0a2V5Zm9yand0YmFua3Jlc3QyMDI0

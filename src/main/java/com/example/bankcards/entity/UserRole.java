@@ -1,6 +1,6 @@
 package com.example.bankcards.entity;
 
-public enum Role {
+public enum UserRole {
     ROLE_USER,
     ROLE_ADMIN,
 }
