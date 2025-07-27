@@ -1,42 +1,156 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.dto.CardDto;
+import com.example.bankcards.dto.CreateCardDto;
+import com.example.bankcards.dto.TransferRequestDto;
 import com.example.bankcards.entity.Card;
+import com.example.bankcards.entity.CardStatus;
+import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
+import static com.example.bankcards.util.CardMaskUtil.maskCardNumber;
+import static com.example.bankcards.util.RandomCardNumber.generateCardNumber;
+
+
+@RequiredArgsConstructor
 @Service
 public class CardService {
     private final CardRepository cardRepository;
+    private final UserRepository userRepository;
 
-    public CardService(CardRepository cardRepository) {
-        this.cardRepository = cardRepository;
+    public CardDto create(CreateCardDto dto, String username) {
+        if (dto.getBalance() != null && dto.getBalance() < 0) {
+            throw new IllegalArgumentException("Balance can't be negative!");
+        }
+
+        LocalDate expireAt = LocalDate.parse(dto.getExpireAt());
+        if (expireAt.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Expiration date can't be in the past!");
+        }
+
+        User owner = findUserEntityByUsername(username);
+
+        Card card = new Card();
+        card.setNumber(generateCardNumber());
+        card.setExpireAt(expireAt);
+        card.setBalance(dto.getBalance() != null ? dto.getBalance() : 0.0);
+        card.setStatus(CardStatus.ACTIVE.name());
+        card.setOwner(owner);
+
+        Card saved = cardRepository.save(card);
+        return toDto(saved);
+    }
+
+    public CardDto userRequestCardBlock(CardDto dto, String username) {
+        Card card = cardRepository.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("Card not found with id: " + dto.getId()));
+
+        // проверяем, что карта принадлежит пользователю
+        if (!card.getOwner().getUsername().equals(username)) {
+            throw new SecurityException("Access denied: this card does not belong to you");
+        }
+
+        // устанавливаем статус запроса блокировки
+        card.setStatus(CardStatus.REQUEST_BLOCKED.name());
+
+        Card updated = cardRepository.save(card);
+        return toDto(updated);
+    }
+
+    public Page<CardDto> getByUsername(String username, Pageable pageable) {
+        Page<Card> cards = cardRepository.findByOwnerUsername(username, pageable);
+        return cards.map(this::toDto);
     }
 
 
-    public List<Card> getCardsByUserId(Long userId) {
-        return cardRepository.findByOwnerId(userId);
+
+    public CardDto getById(Long id) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Card not found with id: " + id));
+        return toDto(card);
     }
 
+    public CardDto adminUpdateCardStatus(Long id, String status) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Card not found with id: " + id));
 
-    public Optional<Card> getCardById(Long id) {
-        return cardRepository.findById(id);
+        try {
+            CardStatus newStatus = CardStatus.valueOf(status.toUpperCase());
+            card.setStatus(newStatus.name());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid card status: " + status);
+        }
+
+        Card updated = cardRepository.save(card);
+        return toDto(updated);
     }
 
-
-    public Card createCard(Card card) {
-        return cardRepository.save(card);
-    }
-
-
-    public Card updateCard(Card card) {
-        return cardRepository.save(card);
-    }
-
-
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteCard(Long id) {
-        cardRepository.deleteById(id);
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Card not found with id: " + id));
+        cardRepository.delete(card);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<CardDto> getAllCards() {
+        return cardRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    // Find owner by по username
+    private User findUserEntityByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    }
+
+    public CardDto toDto(Card card) {
+        return new CardDto(
+                card.getId(),
+                maskCardNumber(card.getNumber()),
+                card.getStatus(),
+                card.getExpireAt().toString(),
+                card.getBalance(),
+                card.getOwner() != null ? card.getOwner().getUsername() : null
+        );
+    }
+
+    public void transfer(TransferRequestDto dto, String username) {
+        if (dto.getFromCardId().equals(dto.getToCardId())) {
+            throw new IllegalArgumentException("Cannot transfer to the same card");
+        }
+
+        Card from = cardRepository.findById(dto.getFromCardId())
+                .orElseThrow(() -> new RuntimeException("From-card not found"));
+        Card to = cardRepository.findById(dto.getToCardId())
+                .orElseThrow(() -> new RuntimeException("To-card not found"));
+
+        // Проверка владельца
+        if (!from.getOwner().getUsername().equals(username) || !to.getOwner().getUsername().equals(username)) {
+            throw new SecurityException("Both cards must belong to the current user");
+        }
+
+        if (from.getBalance() < dto.getAmount()) {
+            throw new IllegalArgumentException("Not enough balance to transfer");
+        }
+
+        from.setBalance(from.getBalance() - dto.getAmount());
+        to.setBalance(to.getBalance() + dto.getAmount());
+
+        cardRepository.save(from);
+        cardRepository.save(to);
+    }
+
 }

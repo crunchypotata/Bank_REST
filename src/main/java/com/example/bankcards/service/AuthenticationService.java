@@ -1,8 +1,7 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.JwtAuthenticationResponse;
-import com.example.bankcards.dto.SignInRequest;
-import com.example.bankcards.dto.SignUpRequest;
+import com.example.bankcards.dto.*;
+import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.bankcards.entity.User;
+
 
 @Service
 @RequiredArgsConstructor
@@ -20,39 +19,32 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
-    /**
-     * Регистрация пользователя
-     *
-     * @param request данные пользователя
-     * @return токен
-     */
+    // Регистрация пользователя
     public JwtAuthenticationResponse signUp(SignUpRequest request) {
+        CreateUserDto createUserDto = new CreateUserDto(
+                request.getUsername(),
+                request.getEmail(),
+                request.getPassword()
+        );
+        userService.create(createUserDto);
 
-        var user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .userRole(UserRole.ROLE_USER)
-                .build();
+        // Получаем entity User для генерации токена
+        User user = userService.findEntityByUsername(request.getUsername());
 
-        userService.create(user);
-
-        var jwt = jwtService.generateToken(user);
+        String jwt = jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }
 
-    //authentication of User
+    // Вход пользователя
     public JwtAuthenticationResponse signIn(SignInRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()
         ));
 
-        var user = userService
-                .userDetailsService()
-                .loadUserByUsername(request.getUsername());
+        User user = userService.findEntityByUsername(request.getUsername());
 
-        var jwt = jwtService.generateToken(user);
+        String jwt = jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }
 }
