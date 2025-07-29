@@ -1,8 +1,0 @@
-# Default ignored files
-/shelf/
-/.idea/workspace.xml
-# Environment-dependent path to Maven home directory
-/mavenHomeManager.xml
-# Ignore secrets
-src/main/resources/application.yml
-.env

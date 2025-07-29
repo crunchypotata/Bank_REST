@@ -43,7 +43,7 @@ ____
 
 ### ✅ Документация
 
-     * [Swagger API Docs] (http://localhost:8080/swagger-ui.html)
+     [Swagger API Docs](http://localhost:8080/swagger-ui.html)
 
 ### ✅ Развёртывание и тестирование
 
