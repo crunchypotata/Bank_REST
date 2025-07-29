@@ -43,14 +43,13 @@ ____
 
 ### ✅ Документация
 
-     [Swagger API Docs](http://localhost:8080/swagger-ui.html)
+[Swagger API Docs](http://localhost:8080/swagger-ui.html)
 
 ### ✅ Развёртывание и тестирование
 
     * Docker Compose для dev-среды
     * Liquibase миграции
     * Юнит-тесты ключевой бизнес-логики
-
     src/test/java
 
 ## 📦 Как запустить ###
@@ -70,8 +69,4 @@ ____
 2. Запустите приложение с помощью Docker Compose:
 
     ```
-    docker-compose up --build
-
-## Контакты для связи:
-- Email: yakimova.cg@gmail.com
-- Telegram: @yakimova
+    docker compose up --build
