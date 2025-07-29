@@ -1,0 +1,7 @@
+/Users/alex/Documents/GitHub/Bank_REST/src/test/java/com/example/bankcards/controller/AuthControllerTest.java
+/Users/alex/Documents/GitHub/Bank_REST/src/test/java/com/example/bankcards/controller/CardControllerTest.java
+/Users/alex/Documents/GitHub/Bank_REST/src/test/java/com/example/bankcards/controller/UserControllerTest.java
+/Users/alex/Documents/GitHub/Bank_REST/src/test/java/com/example/bankcards/service/AuthenticationServiceTest.java
+/Users/alex/Documents/GitHub/Bank_REST/src/test/java/com/example/bankcards/service/CardServiceTest.java
+/Users/alex/Documents/GitHub/Bank_REST/src/test/java/com/example/bankcards/service/TransactionServiceTest.java
+/Users/alex/Documents/GitHub/Bank_REST/src/test/java/com/example/bankcards/service/UserServiceTest.java

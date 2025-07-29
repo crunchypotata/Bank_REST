@@ -1,14 +1,7 @@
 package com.example.bankcards.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class CreateCardDto {
 
     @NotNull(message = "Expiration date is required")
@@ -22,4 +15,37 @@ public class CreateCardDto {
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 30, message = "Username must be 3-30 chars")
     private String username;
+
+    public CreateCardDto() {
+    }
+
+    public CreateCardDto(String expireAt, Double balance, String username) {
+        this.expireAt = expireAt;
+        this.balance = balance;
+        this.username = username;
+    }
+
+    public Double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
+
+    public String getExpireAt() {
+        return expireAt;
+    }
+
+    public void setExpireAt(String expireAt) {
+        this.expireAt = expireAt;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }

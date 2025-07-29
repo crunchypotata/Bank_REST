@@ -5,10 +5,10 @@ import com.example.bankcards.dto.CreateCardDto;
 import com.example.bankcards.dto.TransferRequestDto;
 import com.example.bankcards.service.CardService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,10 +17,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/cards")
 public class CardController {
     private final CardService cardService;
+
+    public CardController(CardService cardService) {
+        this.cardService = cardService;
+    }
 
     @GetMapping("/me/paged")
     public Page<CardDto> getMyCardsPaged(
@@ -32,7 +35,7 @@ public class CardController {
         return cardService.getByUsername(userDetails.getUsername(), pageable);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public CardDto createCard(@Valid @RequestBody CreateCardDto dto,
                               @AuthenticationPrincipal UserDetails userDetails) {
@@ -44,11 +47,17 @@ public class CardController {
         return cardService.getById(id);
     }
 
-    // user
-    @PutMapping("/status")
-    public CardDto requestCardBlock(@Valid @RequestBody CardDto dto,
-                                    @AuthenticationPrincipal UserDetails userDetails) {
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/status/request-block")
+    public CardDto requestBlock(@Valid @RequestBody CardDto dto,
+                                @AuthenticationPrincipal UserDetails userDetails) {
         return cardService.userRequestCardBlock(dto, userDetails.getUsername());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/block")
+    public CardDto blockCard(@RequestParam Long cardId) {
+        return cardService.blockCard(cardId);
     }
 
     @DeleteMapping("/{id}")
@@ -70,10 +79,12 @@ public class CardController {
         return cardService.adminUpdateCardStatus(cardId, status);
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/transfer")
-    public void transfer(@Valid @RequestBody TransferRequestDto dto,
+    public ResponseEntity<Void>  transfer(@Valid @RequestBody TransferRequestDto dto,
                          @AuthenticationPrincipal UserDetails userDetails) {
         cardService.transfer(dto, userDetails.getUsername());
+        return ResponseEntity.noContent().build();
     }
 
 }

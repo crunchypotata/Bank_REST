@@ -1,12 +1,9 @@
 package com.example.bankcards.dto;
 
-
-import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-@Data
 @Schema(description = "Request for user login")
 public class SignInRequest {
 
@@ -19,4 +16,28 @@ public class SignInRequest {
     @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")
     @NotBlank(message = "Password cannot be empty")
     private String password;
+
+    public SignInRequest() {
+    }
+
+    public SignInRequest(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }

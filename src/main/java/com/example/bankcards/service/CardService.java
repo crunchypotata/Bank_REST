@@ -8,7 +8,6 @@ import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -21,13 +20,17 @@ import java.util.List;
 import static com.example.bankcards.util.CardMaskUtil.maskCardNumber;
 import static com.example.bankcards.util.RandomCardNumber.generateCardNumber;
 
-
-@RequiredArgsConstructor
 @Service
 public class CardService {
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
 
+    public CardService(CardRepository cardRepository, UserRepository userRepository) {
+        this.cardRepository = cardRepository;
+        this.userRepository = userRepository;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     public CardDto create(CreateCardDto dto, String username) {
         if (dto.getBalance() != null && dto.getBalance() < 0) {
             throw new IllegalArgumentException("Balance can't be negative!");
@@ -55,23 +58,31 @@ public class CardService {
         Card card = cardRepository.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("Card not found with id: " + dto.getId()));
 
-        // проверяем, что карта принадлежит пользователю
+        // check if the card belongs to the user
         if (!card.getOwner().getUsername().equals(username)) {
             throw new SecurityException("Access denied: this card does not belong to you");
         }
 
-        // устанавливаем статус запроса блокировки
+        // set up the request block status
         card.setStatus(CardStatus.REQUEST_BLOCKED.name());
 
         Card updated = cardRepository.save(card);
         return toDto(updated);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public CardDto blockCard(Long cardId) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new RuntimeException("Card not found with id: " + cardId));
+        card.setStatus(CardStatus.BLOCKED.name());
+        Card saved = cardRepository.save(card);
+        return toDto(saved);
+    }
+
     public Page<CardDto> getByUsername(String username, Pageable pageable) {
         Page<Card> cards = cardRepository.findByOwnerUsername(username, pageable);
         return cards.map(this::toDto);
     }
-
 
 
     public CardDto getById(Long id) {
@@ -137,7 +148,7 @@ public class CardService {
         Card to = cardRepository.findById(dto.getToCardId())
                 .orElseThrow(() -> new RuntimeException("To-card not found"));
 
-        // Проверка владельца
+        // check owner both cards
         if (!from.getOwner().getUsername().equals(username) || !to.getOwner().getUsername().equals(username)) {
             throw new SecurityException("Both cards must belong to the current user");
         }
