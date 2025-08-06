@@ -2,9 +2,9 @@ spring:
   application:
     name: Bank_REST
   datasource:
-    url: jdbc:mysql://localhost:3306/bankrest?useSSL=false
-    username: root
-    password: password
+    url: jdbc:mysql://${MYSQL_HOST:db}:${MYSQL_PORT:3306}/${MYSQL_DB:bankrest}?useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -29,3 +29,11 @@ server:
 app:
   jwt:
     secret: ${JWT_SECRET}
+
+
+logging:
+  level:
+    root: DEBUG
+    org.springframework: DEBUG
+    com.example: DEBUG
+

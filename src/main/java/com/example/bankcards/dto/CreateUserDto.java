@@ -1,14 +1,7 @@
 package com.example.bankcards.dto;
 
-import lombok.*;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import jakarta.validation.constraints.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class CreateUserDto {
 
     @NotBlank(message = "Username is required")
@@ -22,4 +15,37 @@ public class CreateUserDto {
     @NotBlank
     @Size(min = 6, message = "Password must be at least 6 chars")
     private String password;
+
+    public CreateUserDto() {
+    }
+
+    public CreateUserDto(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }

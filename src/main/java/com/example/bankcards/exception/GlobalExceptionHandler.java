@@ -58,5 +58,17 @@ public class GlobalExceptionHandler {
                 .build();
         return ResponseEntity.status(Status.INTERNAL_SERVER_ERROR.getStatusCode()).body(problem);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Problem> handleAnyException(Exception ex) {
+        ex.printStackTrace();
+        Problem problem = Problem.builder()
+                .withTitle("Internal Server Error")
+                .withStatus(Status.INTERNAL_SERVER_ERROR)
+                .withDetail(ex.getMessage())
+                .build();
+        return ResponseEntity.status(Status.INTERNAL_SERVER_ERROR.getStatusCode()).body(problem);
+    }
+
 }
 
